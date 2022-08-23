@@ -1,0 +1,15 @@
+{
+    "templateBookPath":"fullpath of xlsm or xlsx",
+    "templateSheetName":"Sheet1",
+    "inputMdFolder":"fullpath or path",
+    "outputExFolder":"fullpath or path",
+    "startRow":3,
+    "startCol":1,
+    
+    "font":"Meiryo UI",
+    "size":"10",
+    "listPlusIndentSpaces":2,
+    "listNumIndentSpaces":3,
+    "extracts":["Z."]
+}
+
