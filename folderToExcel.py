@@ -24,7 +24,7 @@ class FolderToExcel:
         # shutil.rmtree(stng.outputExFolder)
         # os.mkdir(stng.outputExFolder)
 
-        self.ate.__readTemplate(
+        self.ate.__loadTemplateWorkBook(
             stg.templateBookPath,
             stg.templateSheetName,
             stg.startRow,
@@ -37,7 +37,7 @@ class FolderToExcel:
 
         self.dirs = []
 
-        self.readFolder()
+        self.globFolder()
 
     # まずエクセル共をコピーして貼り付けておく｡
     def copyExcels(self):
@@ -57,7 +57,7 @@ class FolderToExcel:
 
         return
 
-    def readFolder(self):
+    def globFolder(self):
         # 対象のフォルダ内のファイルを全部読み込んで、リストに格納
         # ↓
         # フォルダ単位で検索して､ret!
@@ -77,7 +77,6 @@ class FolderToExcel:
             self.dirs = [p for p in self.dirs if ext not in p]
 
     def generate(self):
-        # 対象のデータを順次変換
 
         targets = [p for p in self.targetPaths if ".md" in p]
 
@@ -87,10 +86,9 @@ class FolderToExcel:
             savePath = path.replace(stg.inputMdFolder, stg.outputExcelFolder)
             extension = stg.templateBookPath[stg.templateBookPath.find(".") :]
             savePath = savePath.replace(".md", extension)
-            self.ate.generateBook(savePath, stg.font, stg.size)
+            self.ate.generate(savePath)
 
     def generateByDir(self):
-        # 対象のデータを順次変換
         for dir in self.dirs:
             targets = [p for p in glob.glob(dir + "/**.md") if os.path.isfile(p)]
 
@@ -108,7 +106,7 @@ class FolderToExcel:
         savePath = savePath + "/" + fileName + ".md.xlsm"
         extension = stg.templateBookPath[stg.templateBookPath.find(".") :]
         # savePath=savePath.replace(".md", extension)
-        self.ate.generateBooks(savePath, stg.font, stg.size)
+        self.ate.generates(savePath)
 
     def save(self, path):
         savePath = path.replace(stg.inputMdFolder, stg.outputExcelFolder)

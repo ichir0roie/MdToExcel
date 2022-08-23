@@ -1,7 +1,3 @@
-import os
-import json
-
-
 class SheetMdInfo:
     def __init__(self, name: str, data: list[str]):
         self.sheetName: str = name

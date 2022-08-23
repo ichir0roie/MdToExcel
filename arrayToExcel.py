@@ -1,3 +1,4 @@
+from tkinter.messagebox import NO
 from excelStructure import *
 import openpyxl
 from openpyxl import load_workbook
@@ -25,8 +26,6 @@ class ArrayToExcel:
 
         self.baseFont = None
 
-        # self.templateWb=None
-        self.__readTemplate()
         return
 
     def reset(self):
@@ -39,47 +38,52 @@ class ArrayToExcel:
     def addBook(self, book: BookMdInfo):
         self.books.append(book)
 
-    def __readTemplate(self):
-        # self.wb = load_workbook(filename=path, keep_vba=True)
-        self.templateBookPath = stg.templateBookPath
-        self.templateSheetName = stg.templateSheetName
-        self.startCol = stg.startCol
-        self.startRow = stg.startRow
+    def __newWorkSheetFromTemplate(self, workbook: Workbook) -> Worksheet:
+        template = None
+        if stg.templateSheetName in workbook.sheetnames:
+            template: Worksheet = workbook.copy_worksheet(
+                workbook.get_sheet_by_name(stg.templateSheetName)
+            )
+            template.sheet_state = "visible"
+        else:
+            template = workbook.create_sheet()
+        return template
 
-        # cant't copy sheet from book A to book B.
-        self.templateWb = load_workbook(
-            filename=self.templateBookPath, keep_vba=True, read_only=False
-        )
+    def generate(self, outputPath: str):
+        wb = self.setupWorkBook(outputPath=outputPath)
 
-    def generateBook(self, outputPath: str):
+        for sheet in self.book.sheets:
+            self.parseSheetMdInfoToExcel(wb, sheet)
 
+        self.finishWorkBook(wb, outputPath)
+
+        return
+
+    def setupWorkBook(self, outputPath: str):
+        extension = outputPath[outputPath.rfind(".") + 1 :]
+        if extension == "xlsx":
+            raise Exception("file must be xlsm")
+
+        # initialize as xlsm
         outputDir = outputPath[0 : outputPath.rfind("/")]
         if not os.path.exists(outputPath):
             if not os.path.exists(outputDir):
                 os.makedirs(outputDir)
-            shutil.copy(self.templateBookPath, outputPath)
+            shutil.copy(stg.templateBookPath, outputPath)
             # wb=load_workbook(filename=self.templateBookPath, keep_vba=True,read_only=False)
-
         wb = load_workbook(outputPath, keep_vba=True, read_only=False)
 
-        for sheet in self.book.sheets:  # type:Sheet
-            self.parseSheetMdInfoToExcel(wb, sheet)
-
+        # reset template sheet
         if stg.templateSheetName in wb.sheetnames:
-            std = wb.get_sheet_by_name(stg.templateSheetName)
-            wb.remove_sheet(std)
+            std: Worksheet = wb.get_sheet_by_name(stg.templateSheetName)
+            # https://stackoverflow.com/questions/23157643/openpyxl-and-hidden-unhidden-excel-worksheets
+            std.sheet_state = "hidden"
+            # wb.remove_sheet(std)
+        return wb
 
-        beforePath = outputPath[0 : outputPath.rfind(".")]
-        extension = outputPath[outputPath.rfind(".") + 1 :]
-        if extension == "xlsx":
-            os.remove(outputPath)
-            extension = "xlsm"
-        outputPath = "{}.{}".format(beforePath, extension)
-        wb.save(outputPath)
-
-        wb.close()
-
-        return
+    def finishWorkBook(self, workbook: Workbook, outputPath: str):
+        workbook.save(outputPath)
+        workbook.close()
 
     def parseSheetMdInfoToExcel(self, wb: Workbook, sheet: SheetMdInfo):
         print(sheet.sheetName)
@@ -90,46 +94,30 @@ class ArrayToExcel:
             std = wb.get_sheet_by_name(sheet.sheetName)
             wb.remove_sheet(std)
 
-        ws = None
-        if self.templateSheetName in wb.sheetnames:
-            # ws = wb.copy_worksheet(wb.get_sheet_by_name(self.templateSheetName))
-            ws = self.templateWb.get_sheet_by_name(stg.templateSheetName)
-            wb.worksheets.append(ws)
-        else:
-            ws = wb.create_sheet()
-        ws.title = sheet.sheetName
-        # rootFont=ws.cell(self.startRow+1, self.startCol+1).font
-        # self.baseFont=Font(name=rootFont.name,sz=rootFont.sz)
+        newSheet = self.__newWorkSheetFromTemplate(wb)
+
+        newSheet.title = sheet.sheetName
 
         self.baseFont = Font(name=stg.font, size=stg.size)
 
         for r, row in enumerate(sheet.data):
             for c, column in enumerate(row):
                 if column != "":
-                    self.__setVal(ws, r + 1, c + 1, column)
+                    self.__setVal(newSheet, r + 1, c + 1, column)
 
-    def generateBooks(self, outputPath: str, font: str, size):
+    def generates(self, outputPath):
+        wb = self.setupWorkBook(outputPath)
 
-        outputDir = outputPath[0 : outputPath.rfind("/")]
-        if not os.path.exists(outputPath):
-            if not os.path.exists(outputDir):
-                os.makedirs(outputDir)
-            shutil.copy(self.templateBookPath, outputPath)
-            # wb=load_workbook(filename=self.templateBookPath, keep_vba=True,read_only=False)
-
-        wb = load_workbook(outputPath, keep_vba=True, read_only=False)
         for book in self.books:
             for sheet in book.sheets:
                 self.parseSheetMdInfoToExcel(wb, sheet)
 
-        wb.save(outputPath)
-
-        wb.close()
+        self.finishWorkBook(wb, outputPath)
 
         return
 
     def __setVal(self, ws: openpyxl.worksheet, row, col, val):
-        cell = ws.cell(row=row + self.startRow, column=col + self.startCol)
+        cell = ws.cell(row=row + stg.startRow, column=col + stg.startCol)
         cell.font = self.baseFont
         cell.value = val
         return
@@ -148,4 +136,4 @@ if __name__ == "__main__":
     ate = ArrayToExcel()
     ate.setBook(book=mte.book)
     # ate.readTemplate()
-    ate.generateBook("test/test.xlsx")
+    ate.generate("test/test.xlsm")
