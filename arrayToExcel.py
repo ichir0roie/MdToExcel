@@ -28,7 +28,7 @@ class ArrayToExcel:
 
         return
 
-    def reset(self):
+    def __reset(self):
         self.book = None
         self.books = []
 
@@ -50,16 +50,16 @@ class ArrayToExcel:
         return template
 
     def generate(self, outputPath: str):
-        wb = self.setupWorkBook(outputPath=outputPath)
+        wb = self.__setupWorkBook(outputPath=outputPath)
 
         for sheet in self.book.sheets:
-            self.parseSheetMdInfoToExcel(wb, sheet)
+            self.__parseSheetMdInfoToExcel(wb, sheet)
 
-        self.finishWorkBook(wb, outputPath)
+        self.__finishWorkBook(wb, outputPath)
 
         return
 
-    def setupWorkBook(self, outputPath: str):
+    def __setupWorkBook(self, outputPath: str):
         extension = outputPath[outputPath.rfind(".") + 1 :]
         if extension == "xlsx":
             raise Exception("file must be xlsm")
@@ -81,11 +81,11 @@ class ArrayToExcel:
             # wb.remove_sheet(std)
         return wb
 
-    def finishWorkBook(self, workbook: Workbook, outputPath: str):
+    def __finishWorkBook(self, workbook: Workbook, outputPath: str):
         workbook.save(outputPath)
         workbook.close()
 
-    def parseSheetMdInfoToExcel(self, wb: Workbook, sheet: SheetMdInfo):
+    def __parseSheetMdInfoToExcel(self, wb: Workbook, sheet: SheetMdInfo):
         print(sheet.sheetName)
         print(sheet.data)
 
@@ -106,13 +106,13 @@ class ArrayToExcel:
                     self.__setVal(newSheet, r + 1, c + 1, column)
 
     def generates(self, outputPath):
-        wb = self.setupWorkBook(outputPath)
+        wb = self.__setupWorkBook(outputPath)
 
         for book in self.books:
             for sheet in book.sheets:
-                self.parseSheetMdInfoToExcel(wb, sheet)
+                self.__parseSheetMdInfoToExcel(wb, sheet)
 
-        self.finishWorkBook(wb, outputPath)
+        self.__finishWorkBook(wb, outputPath)
 
         return
 

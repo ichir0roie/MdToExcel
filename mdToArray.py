@@ -14,15 +14,15 @@ class MdToArray:
         with open(path, encoding="utf-8", mode="r") as f:
             # self.md = f.read()
             text = f.read()
-        textList = self.loadTextList(text=text)
-        self.compile(textList)
+        textList = self.__loadTextList(text=text)
+        self.__compile(textList)
         return
 
-    def loadTextList(self, text: str) -> list[str]:
+    def __loadTextList(self, text: str) -> list[str]:
         return text.split("\n")
 
     # HACK ちょっとこれは汚い｡
-    def compile(self, textList: list[str]):
+    def __compile(self, textList: list[str]):
         self.book = BookMdInfo()
         sheet: list[SheetMdInfo] = []
         pcss = []
@@ -64,16 +64,16 @@ class MdToArray:
             #     continue
 
             # for list format
-            if line[0] == " " or line[0] == "+" or line[1] == ".":
+            if line[0] == " " or line[0] == "*" or line[1] == ".":
                 listIndent = 0
                 listTxt = ""
                 sc = 0
                 while line[sc] == " ":
                     sc += 1
-                # for "+ "
-                if line[sc] == "+":
+                # for "* "
+                if line[sc] == "*":
                     listIndent = int(sc / stg.listPlusIndentSpaces)
-                    addTex = line[line.find("+ ") + 2 :]
+                    addTex = line[line.find("* ") + 2 :]
                 # for "1. "
                 elif line[sc + 1] == ".":
                     listIndent = int(sc / stg.listNumIndentSpaces)
@@ -91,7 +91,7 @@ class MdToArray:
         # change page
         self.book.addSheet(self.fileName, sheet)
 
-    def printBook(self):
+    def __printBook(self):
         for sheet in self.book.sheets:  # type:Sheet
             print("sheet : " + sheet.sheetName)
             # print(i)
@@ -108,4 +108,4 @@ class MdToArray:
 if __name__ == "__main__":
     mte = MdToArray()
     mte.read("test/test.md")
-    mte.printBook()
+    mte.__printBook()

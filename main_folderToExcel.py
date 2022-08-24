@@ -92,7 +92,7 @@ class FolderToExcel:
         for dir in self.dirs:
             targets = [p for p in glob.glob(dir + "/**.md") if os.path.isfile(p)]
 
-            self.ate.reset()
+            self.ate.__reset()
             for path in targets:
                 self.mta.read(path)
                 self.ate.addBook(self.mta.book)
