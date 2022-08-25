@@ -53,17 +53,8 @@ class MdToArray:
                 column.append(line[p + 1 :])
                 sheet.append(column)
                 continue
-            # elif p == 1:  # sheet
-            #     if sheetName != "" and len(sheet) > 0:
-            #         self.book.addSheet(sheetName, sheet)
-            #     sheetName = line[p+1:]
-            #     sheet = []
-            #     pcss = [0]
-            #     indent=0
-            #     indentBefore=0
-            #     continue
 
-            # for list format
+            # TODO セルのフォントフラグを設定できるようにしたい。
             if line[0] == " " or line[0] == "*" or line[1] == ".":
                 listIndent = 0
                 listTxt = ""
@@ -73,6 +64,7 @@ class MdToArray:
                 # for "* "
                 if line[sc] == "*":
                     listIndent = int(sc / stg.listPlusIndentSpaces)
+                    listTxt = "・"
                     addTex = line[line.find("* ") + 2 :]
                 # for "1. "
                 elif line[sc + 1] == ".":
